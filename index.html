@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instagram</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #121212;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: #f5f5f5;
+    }
+
+    /* ══════════════════════════════
+       TELA DE ACEITE
+    ══════════════════════════════ */
+    #telaAceite {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .aceite-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 16px;
+      max-width: 520px;
+      width: 100%;
+      padding: 40px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      color: #f0f0f0;
+    }
+    .aceite-card .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #c0392b;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      width: fit-content;
+      text-transform: uppercase;
+    }
+    .aceite-card h1 { font-size: 1.4rem; font-weight: 700; color: #fff; line-height: 1.35; }
+    .aceite-card p  { font-size: 0.88rem; color: #aaa; line-height: 1.7; }
+    .aceite-card p strong { color: #fff; }
+    .aceite-termos {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .aceite-termos .termo { display: flex; gap: 10px; font-size: 0.82rem; color: #ccc; line-height: 1.5; }
+    .aceite-termos .termo .bullet { color: #0095f6; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .aceite-checkbox {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.83rem; color: #ccc; cursor: pointer; line-height: 1.5;
+    }
+    .aceite-checkbox input[type="checkbox"] {
+      margin-top: 2px; width: 16px; height: 16px;
+      flex-shrink: 0; accent-color: #0095f6; cursor: pointer;
+    }
+    .btn-iniciar {
+      padding: 13px; background: #0095f6; color: #fff; border: none;
+      border-radius: 8px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-iniciar:disabled { opacity: 0.35; cursor: default; }
+    .btn-iniciar:not(:disabled):hover { background: #1877f2; }
+    .aceite-aviso { font-size: 0.72rem; color: #555; text-align: center; line-height: 1.5; }
+
+    /* ══════════════════════════════
+       TELA DE LOGIN
+    ══════════════════════════════ */
+    #telaLogin {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    #telaLogin.visivel { display: flex; }
+
+    /* Layout split screen */
+    .split-layout {
+      flex: 1;
+      display: flex;
+      min-height: calc(100vh - 50px);
+    }
+
+    /* ── Coluna esquerda ── */
+    .left-col {
+      flex: 1;
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 80px;
+      gap: 24px;
+      border-right: 1px solid #2a2a2a;
+    }
+    @media (max-width: 860px) { .left-col { display: none; } }
+
+    .left-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .left-logo svg { width: 32px; height: 32px; }
+    .left-logo-text {
+      font-family: 'Dancing Script', 'Grand Hotel', cursive;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .left-tagline {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      max-width: 420px;
+    }
+    .left-tagline .highlight {
+      background: linear-gradient(90deg, #f9a825, #e91e63, #9c27b0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Colagem de fotos */
+    .photo-collage {
+      position: relative;
+      width: 380px;
+      height: 340px;
+      margin-top: 12px;
+    }
+    .photo-card {
+      position: absolute;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      background: #2a2a2a;
+    }
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Placeholders coloridos quando sem imagem real */
+    .pc1 { width: 170px; height: 220px; top: 20px; left: 0; transform: rotate(-6deg); background: linear-gradient(135deg, #667eea, #764ba2); }
+    .pc2 { width: 155px; height: 200px; top: 0;   left: 130px; transform: rotate(3deg);  background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .pc3 { width: 145px; height: 190px; top: 30px; left: 240px; transform: rotate(-2deg); background: linear-gradient(135deg, #4facfe, #00f2fe); }
+    .pc4 { width: 130px; height: 160px; top: 160px;left: 60px;  transform: rotate(4deg);  background: linear-gradient(135deg, #43e97b, #38f9d7); }
+    .pc5 { width: 120px; height: 150px; top: 170px;left: 220px; transform: rotate(-3deg); background: linear-gradient(135deg, #fa709a, #fee140); }
+
+    /* Emoji overlays */
+    .photo-card .emoji-overlay {
+      position: absolute;
+      font-size: 1.6rem;
+      bottom: 8px;
+      right: 8px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    /* Story ring */
+    .story-ring {
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      z-index: -1;
+    }
+
+    /* ── Coluna direita ── */
+    .right-col {
+      width: 420px;
+      flex-shrink: 0;
+      background: #1e1e1e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      gap: 16px;
+    }
+    @media (max-width: 860px) {
+      .right-col { width: 100%; background: #121212; }
+    }
+
+    .form-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f5f5f5;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    /* ── Inputs ── */
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field {
+      position: relative;
+      width: 100%;
+      border: 1px solid #363636;
+      border-radius: 10px;
+      background: #2a2a2a;
+      display: flex;
+      align-items: center;
+      transition: border-color 0.15s;
+      height: 52px;
+    }
+    .field:focus-within { border-color: #555; }
+
+    .field input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 18px 14px 6px;
+      height: 100%;
+      font-size: 0.9rem;
+      color: #f5f5f5;
+      outline: none;
+    }
+    .field input::placeholder { color: transparent; }
+
+    .field .flabel {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.88rem;
+      color: #888;
+      pointer-events: none;
+      transition: font-size 0.12s, top 0.12s, transform 0.12s;
+    }
+    .field input:focus ~ .flabel,
+    .field input:not(:placeholder-shown) ~ .flabel {
+      top: 10px;
+      transform: none;
+      font-size: 0.68rem;
+      color: #aaa;
+    }
+
+    .toggle-pw {
+      background: none; border: none;
+      font-size: 0.8rem; font-weight: 600;
+      color: #f5f5f5; cursor: pointer;
+      padding: 0 14px; height: 100%;
+      display: none; flex-shrink: 0;
+    }
+    .field:focus-within .toggle-pw,
+    .pw-active .toggle-pw { display: block; }
+
+    /* Botão Entrar */
+    .btn-entrar {
+      width: 100%;
+      padding: 12px;
+      background: #0095f6;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-entrar:hover:not(:disabled) { background: #1a77f2; }
+    .btn-entrar:disabled { opacity: 0.45; cursor: default; }
+
+    /* Esqueceu a senha */
+    .link-forgot {
+      font-size: 0.82rem;
+      color: #f5f5f5;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+      margin: 4px auto;
+    }
+    .link-forgot:hover { text-decoration: underline; }
+
+    /* Divider */
+    .sep {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin: 4px 0;
+    }
+    .sep hr { flex: 1; border: none; border-top: 1px solid #363636; }
+
+    /* Botão Facebook */
+    .btn-fb {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: transparent;
+      border: 1px solid #363636;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f5f5f5;
+      cursor: pointer;
+      padding: 12px;
+      transition: background 0.15s;
+    }
+    .btn-fb:hover { background: #2a2a2a; }
+    .btn-fb svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* Criar nova conta */
+    .btn-criar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1.5px solid #0095f6;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #0095f6;
+      cursor: pointer;
+      padding: 11px;
+      transition: background 0.15s;
+    }
+    .btn-criar:hover { background: rgba(0,149,246,0.08); }
+
+    /* Meta logo */
+    .meta-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #888;
+      margin-top: 4px;
+    }
+    .meta-logo svg { width: 38px; height: 14px; fill: #888; }
+
+    /* ── Rodapé ── */
+    footer {
+      background: #1a1a1a;
+      border-top: 1px solid #2a2a2a;
+      padding: 12px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    footer nav {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 4px 14px;
+    }
+    footer nav a {
+      font-size: 0.68rem; color: #888;
+      text-decoration: none;
+    }
+    footer nav a:hover { text-decoration: underline; }
+    footer p { font-size: 0.68rem; color: #888; }
+
+    /* ══════════════════════════════
+       MODAL EDUCATIVO
+    ══════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.78); z-index: 2000;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 14px;
+      max-width: 500px; width: 100%;
+      overflow: hidden;
+      box-shadow: 0 16px 56px rgba(0,0,0,0.6);
+      animation: up 0.22s ease;
+      max-height: 92vh; overflow-y: auto;
+    }
+    @keyframes up { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-head {
+      background: #c0392b; padding: 20px 22px;
+      display: flex; align-items: center; gap: 14px;
+      position: sticky; top: 0;
+    }
+    .modal-head .ico { font-size: 2.2rem; flex-shrink: 0; }
+    .modal-head h2 { color: #fff; font-size: 1rem; line-height: 1.35; }
+    .modal-head p  { color: rgba(255,255,255,0.78); font-size: 0.76rem; margin-top: 2px; }
+    .modal-body { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+    .box-captured {
+      background: #2a1f00;
+      border: 1px solid #ffc107;
+      border-radius: 8px; padding: 14px 16px;
+      font-size: 0.82rem; color: #f5f5f5; word-break: break-all;
+    }
+    .box-captured .lbl { display: block; font-weight: 700; color: #ffc107; margin-bottom: 8px; }
+    .box-captured .row { margin: 3px 0; }
+    .box-captured .row strong { color: #ff6b6b; }
+    .box-edu {
+      background: #0d2137;
+      border-left: 4px solid #0095f6;
+      border-radius: 0 8px 8px 0; padding: 14px 16px;
+      font-size: 0.82rem; color: #d0d0d0; line-height: 1.65;
+    }
+    .box-edu strong { color: #ff6b6b; }
+    .tips-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888; }
+    .tips { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .tips li { display: flex; gap: 8px; font-size: 0.82rem; color: #ccc; line-height: 1.5; }
+    .tips li .ic { flex-shrink: 0; }
+    .modal-foot { padding: 0 22px 22px; }
+    .btn-fechar {
+      width: 100%; padding: 11px; background: #c0392b; color: #fff;
+      border: none; border-radius: 8px; font-size: 0.88rem;
+      font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-fechar:hover { background: #a93226; }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════
+       TELA DE ACEITE
+  ══════════════════════════════ -->
+  <div id="telaAceite">
+    <div class="aceite-card">
+      <div class="tag">🎓 Atividade Acadêmica</div>
+      <h1>Simulação de Ataque de Phishing</h1>
+      <p>
+        Você está prestes a participar de uma <strong>atividade controlada de conscientização em Segurança da Informação</strong>.
+        A próxima tela simulará uma página de login falsa para demonstrar como ataques de phishing funcionam na prática.
+      </p>
+      <div class="aceite-termos">
+        <div class="termo"><span class="bullet">→</span><span>Nenhum dado digitado será enviado, armazenado ou transmitido pela internet.</span></div>
+        <div class="termo"><span class="bullet">→</span><span>Todo o processamento ocorre exclusivamente no seu navegador, sem comunicação com servidores.</span></div>
+        <div class="termo"><span class="bullet">→</span><span>Após o clique em "Entrar", uma mensagem educativa explicará o que aconteceu.</span></div>
+        <div class="termo"><span class="bullet">→</span><span>Esta atividade é para fins exclusivamente educacionais, conforme orientação do professor.</span></div>
+      </div>
+      <label class="aceite-checkbox">
+        <input type="checkbox" id="checkAceite" />
+        <span>Li e compreendi os termos acima. Concordo em participar desta simulação educacional.</span>
+      </label>
+      <button class="btn-iniciar" id="btnIniciar" disabled>Iniciar Simulação →</button>
+      <p class="aceite-aviso">Desenvolvido para aula de Segurança da Informação &nbsp;·&nbsp; Uso exclusivamente acadêmico</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       TELA DE LOGIN — Instagram
+  ══════════════════════════════ -->
+  <div id="telaLogin">
+
+    <div class="split-layout">
+
+      <!-- ── Coluna esquerda ── -->
+      <div class="left-col" aria-hidden="true">
+
+        <div class="left-logo">
+          <!-- Ícone Instagram gradiente -->
+          <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#f09433"/>
+                <stop offset="25%"  stop-color="#e6683c"/>
+                <stop offset="50%"  stop-color="#dc2743"/>
+                <stop offset="75%"  stop-color="#cc2366"/>
+                <stop offset="100%" stop-color="#bc1888"/>
+              </linearGradient>
+            </defs>
+            <rect width="50" height="50" rx="13" fill="url(#igGrad)"/>
+            <rect x="6" y="6" width="38" height="38" rx="10" stroke="#fff" stroke-width="3" fill="none"/>
+            <circle cx="25" cy="25" r="9" stroke="#fff" stroke-width="3" fill="none"/>
+            <circle cx="36.5" cy="13.5" r="2.5" fill="#fff"/>
+          </svg>
+          <span class="left-logo-text">Instagram</span>
+        </div>
+
+        <div class="left-tagline">
+          Veja momentos do dia a dia dos seus<br>
+          <span class="highlight">amigos próximos.</span>
+        </div>
+
+        <!-- Colagem de fotos simulada -->
+        <div class="photo-collage">
+          <div class="photo-card pc1">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <span class="emoji-overlay">❤️</span>
+          </div>
+          <div class="photo-card pc2">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#f093fb,#f5576c);display:flex;align-items:center;justify-content:center;">
+              <svg width="55" height="55" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.4);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+          </div>
+          <div class="photo-card pc3">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#4facfe,#00f2fe);display:flex;align-items:center;justify-content:center;">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            </div>
+          </div>
+          <div class="photo-card pc4">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#43e97b,#38f9d7);display:flex;align-items:center;justify-content:center;">
+              <svg width="45" height="45" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <span class="emoji-overlay">🌟</span>
+          </div>
+          <div class="photo-card pc5">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#fa709a,#fee140);display:flex;align-items:center;justify-content:center;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ── Coluna direita ── -->
+      <div class="right-col">
+
+        <p class="form-title">Entrar no Instagram</p>
+
+        <form id="loginForm" novalidate class="login-form">
+
+          <div class="field" id="fieldUser">
+            <input
+              type="text"
+              id="usuario"
+              placeholder=" "
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <label class="flabel" for="usuario">Número de celular, nome de usuário ou email</label>
+          </div>
+
+          <div class="field" id="fieldPw">
+            <input
+              type="password"
+              id="senha"
+              placeholder=" "
+              autocomplete="off"
+            />
+            <label class="flabel" for="senha">Senha</label>
+            <button type="button" class="toggle-pw" id="togglePw">Mostrar</button>
+          </div>
+
+          <button type="submit" class="btn-entrar" id="btnEntrar" disabled>Entrar</button>
+
+        </form>
+
+        <a href="#" class="link-forgot" onclick="return false;">Esqueceu a senha?</a>
+
+        <div class="sep"><hr/></div>
+
+        <button class="btn-fb" type="button" onclick="return false;">
+          <!-- Facebook icon -->
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#4267B2">
+            <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.313 0 2.686.236 2.686.236v2.97h-1.513c-1.49 0-1.956.93-1.956 1.883v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+          </svg>
+          Entrar com o Facebook
+        </button>
+
+        <button class="btn-criar" type="button" onclick="return false;">
+          Criar nova conta
+        </button>
+
+        <div class="meta-logo">
+          <svg viewBox="0 0 60 23" xmlns="http://www.w3.org/2000/svg">
+            <text x="0" y="18" font-size="18" font-family="Arial,sans-serif" font-weight="600" fill="#888">∞ Meta</text>
+          </svg>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /split-layout -->
+
+    <footer>
+      <nav>
+        <a href="#" onclick="return false;">Meta</a>
+        <a href="#" onclick="return false;">Sobre</a>
+        <a href="#" onclick="return false;">Blog</a>
+        <a href="#" onclick="return false;">Carreiras</a>
+        <a href="#" onclick="return false;">Ajuda</a>
+        <a href="#" onclick="return false;">API</a>
+        <a href="#" onclick="return false;">Privacidade</a>
+        <a href="#" onclick="return false;">Termos</a>
+        <a href="#" onclick="return false;">Localizações</a>
+        <a href="#" onclick="return false;">Instagram Lite</a>
+        <a href="#" onclick="return false;">Meta AI</a>
+        <a href="#" onclick="return false;">Threads</a>
+        <a href="#" onclick="return false;">Upload de contatos e não usuários</a>
+        <a href="#" onclick="return false;">Meta Verified</a>
+      </nav>
+      <p>© 2025 Instagram from Meta</p>
+    </footer>
+
+  </div><!-- /telaLogin -->
+
+  <!-- ══════════════════════════════
+       MODAL EDUCATIVO
+  ══════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="ico">🎣</span>
+        <div>
+          <h2 id="modalTitle">Você acabou de cair em um ataque de phishing!</h2>
+          <p>Simulação educacional — nenhum dado foi transmitido</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="box-captured">
+          <span class="lbl">📋 Dados que seriam roubados em um ataque real:</span>
+          <div id="capturedData"></div>
+        </div>
+        <div class="box-edu">
+          <strong>⚠️ O que aconteceria em um ataque real?</strong><br><br>
+          Suas credenciais teriam sido enviadas imediatamente a um servidor controlado por um criminoso.
+          Com isso, ele poderia acessar sua conta, ler suas mensagens, roubar seus contatos
+          e até se passar por você para aplicar golpes em outras pessoas.
+        </div>
+        <p class="tips-title">Como se proteger</p>
+        <ul class="tips">
+          <li><span class="ic">🚨</span><span>A URL desta página <strong>não era</strong> <code>https://www.instagram.com</code> — sempre confira o endereço exato na barra do navegador.</span></li>
+          <li><span class="ic">🔒</span><span>Verifique o cadeado e o domínio antes de digitar qualquer senha.</span></li>
+          <li><span class="ic">⌨️</span><span>Erros sutis na URL ("lnstagram", "instagr4m") são sinais clássicos de phishing.</span></li>
+          <li><span class="ic">📧</span><span>Sites legítimos jamais pedem senha por e-mail ou link recebido por mensagem.</span></li>
+          <li><span class="ic">📱</span><span>Ative a autenticação de dois fatores (2FA) em todas as suas contas.</span></li>
+          <li><span class="ic">✅</span><span>URL oficial: <strong>https://www.instagram.com</strong></span></li>
+        </ul>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-fechar" id="btnFechar">Entendi — Quero me proteger ✅</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log(
+      "%c[SIMULAÇÃO ÉTICA]",
+      "background:#c0392b;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;",
+      "Simulação ética para fins educacionais - Desenvolvido para aula de Segurança da Informação."
+    );
+    console.log("%cNenhum dado é transmitido, armazenado ou enviado para qualquer servidor.", "color:#0095f6;font-style:italic;");
+
+    /* ── Aceite ── */
+    const checkAceite = document.getElementById("checkAceite");
+    const btnIniciar  = document.getElementById("btnIniciar");
+    checkAceite.addEventListener("change", () => { btnIniciar.disabled = !checkAceite.checked; });
+    btnIniciar.addEventListener("click", () => {
+      document.getElementById("telaAceite").style.display = "none";
+      const tl = document.getElementById("telaLogin");
+      tl.classList.add("visivel");
+      document.getElementById("usuario").focus();
+    });
+
+    /* ── Login ── */
+    const form         = document.getElementById("loginForm");
+    const inputUser    = document.getElementById("usuario");
+    const inputPw      = document.getElementById("senha");
+    const btnEntrar    = document.getElementById("btnEntrar");
+    const fieldPw      = document.getElementById("fieldPw");
+    const toggleBtn    = document.getElementById("togglePw");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const capturedData = document.getElementById("capturedData");
+    const btnFechar    = document.getElementById("btnFechar");
+
+    function syncBtn() {
+      btnEntrar.disabled = !(inputUser.value.trim() && inputPw.value);
+    }
+    inputUser.addEventListener("input", syncBtn);
+    inputPw.addEventListener("input", () => {
+      syncBtn();
+      fieldPw.classList.toggle("pw-active", inputPw.value.length > 0);
+    });
+
+    toggleBtn.addEventListener("click", () => {
+      const show = inputPw.type === "password";
+      inputPw.type = show ? "text" : "password";
+      toggleBtn.textContent = show ? "Ocultar" : "Mostrar";
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const u = inputUser.value.trim() || "(vazio)";
+      const p = inputPw.value          || "(vazio)";
+      capturedData.innerHTML =
+        `<div class="row">Login: <strong>${esc(u)}</strong></div>` +
+        `<div class="row">Senha: <strong>${esc(p)}</strong></div>`;
+      modalOverlay.classList.add("active");
+      btnFechar.focus();
+    });
+
+    btnFechar.addEventListener("click", fecharModal);
+    modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) fecharModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") fecharModal(); });
+
+    function fecharModal() {
+      modalOverlay.classList.remove("active");
+      inputUser.value = ""; inputPw.value = "";
+      inputPw.type = "password"; toggleBtn.textContent = "Mostrar";
+      fieldPw.classList.remove("pw-active");
+      syncBtn(); inputUser.focus();
+    }
+
+    function esc(s) {
+      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+               .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    }
+  </script>
+</body>
+</html>
