@@ -17,80 +17,9 @@
     }
 
     /* ══════════════════════════════
-       TELA DE ACEITE
-    ══════════════════════════════ */
-    #telaAceite {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #0a0a0a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .aceite-card {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 16px;
-      max-width: 520px;
-      width: 100%;
-      padding: 40px 36px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      color: #f0f0f0;
-    }
-    .aceite-card .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #c0392b;
-      color: #fff;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      padding: 4px 10px;
-      border-radius: 4px;
-      width: fit-content;
-      text-transform: uppercase;
-    }
-    .aceite-card h1 { font-size: 1.4rem; font-weight: 700; color: #fff; line-height: 1.35; }
-    .aceite-card p  { font-size: 0.88rem; color: #aaa; line-height: 1.7; }
-    .aceite-card p strong { color: #fff; }
-    .aceite-termos {
-      background: #111;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .aceite-termos .termo { display: flex; gap: 10px; font-size: 0.82rem; color: #ccc; line-height: 1.5; }
-    .aceite-termos .termo .bullet { color: #0095f6; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-    .aceite-checkbox {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 0.83rem; color: #ccc; cursor: pointer; line-height: 1.5;
-    }
-    .aceite-checkbox input[type="checkbox"] {
-      margin-top: 2px; width: 16px; height: 16px;
-      flex-shrink: 0; accent-color: #0095f6; cursor: pointer;
-    }
-    .btn-iniciar {
-      padding: 13px; background: #0095f6; color: #fff; border: none;
-      border-radius: 8px; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; transition: background 0.15s, opacity 0.15s;
-    }
-    .btn-iniciar:disabled { opacity: 0.35; cursor: default; }
-    .btn-iniciar:not(:disabled):hover { background: #1877f2; }
-    .aceite-aviso { font-size: 0.72rem; color: #555; text-align: center; line-height: 1.5; }
-
-    /* ══════════════════════════════
        TELA DE LOGIN
     ══════════════════════════════ */
     #telaLogin {
-      display: none;
       flex: 1;
       flex-direction: column;
       min-height: 100vh;
@@ -445,31 +374,6 @@
 </head>
 <body>
 
-  <!-- ══════════════════════════════
-       TELA DE ACEITE
-  ══════════════════════════════ -->
-  <div id="telaAceite">
-    <div class="aceite-card">
-      <div class="tag">🎓 Atividade Acadêmica</div>
-      <h1>Simulação de Ataque de Phishing</h1>
-      <p>
-        Você está prestes a participar de uma <strong>atividade controlada de conscientização em Segurança da Informação</strong>.
-        A próxima tela simulará uma página de login falsa para demonstrar como ataques de phishing funcionam na prática.
-      </p>
-      <div class="aceite-termos">
-        <div class="termo"><span class="bullet">→</span><span>Nenhum dado digitado será enviado, armazenado ou transmitido pela internet.</span></div>
-        <div class="termo"><span class="bullet">→</span><span>Todo o processamento ocorre exclusivamente no seu navegador, sem comunicação com servidores.</span></div>
-        <div class="termo"><span class="bullet">→</span><span>Após o clique em "Entrar", uma mensagem educativa explicará o que aconteceu.</span></div>
-        <div class="termo"><span class="bullet">→</span><span>Esta atividade é para fins exclusivamente educacionais, conforme orientação do professor.</span></div>
-      </div>
-      <label class="aceite-checkbox">
-        <input type="checkbox" id="checkAceite" />
-        <span>Li e compreendi os termos acima. Concordo em participar desta simulação educacional.</span>
-      </label>
-      <button class="btn-iniciar" id="btnIniciar" disabled>Iniciar Simulação →</button>
-      <p class="aceite-aviso">Desenvolvido para aula de Segurança da Informação &nbsp;·&nbsp; Uso exclusivamente acadêmico</p>
-    </div>
-  </div>
 
   <!-- ══════════════════════════════
        TELA DE LOGIN — Instagram
@@ -670,16 +574,6 @@
     );
     console.log("%cNenhum dado é transmitido, armazenado ou enviado para qualquer servidor.", "color:#0095f6;font-style:italic;");
 
-    /* ── Aceite ── */
-    const checkAceite = document.getElementById("checkAceite");
-    const btnIniciar  = document.getElementById("btnIniciar");
-    checkAceite.addEventListener("change", () => { btnIniciar.disabled = !checkAceite.checked; });
-    btnIniciar.addEventListener("click", () => {
-      document.getElementById("telaAceite").style.display = "none";
-      const tl = document.getElementById("telaLogin");
-      tl.classList.add("visivel");
-      document.getElementById("usuario").focus();
-    });
 
     /* ── Login ── */
     const form         = document.getElementById("loginForm");
